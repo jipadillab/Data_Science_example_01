@@ -204,10 +204,24 @@ if not st.session_state.autenticado:
 # --------------------------------------------------------------------------
 # A partir de aquí el usuario ya está autenticado
 # --------------------------------------------------------------------------
-if "df" not in st.session_state:
+COLUMNAS_ESPERADAS = {
+    "Fecha", "Zona", "Tipo_Zona", "Poblacion", "Temperatura_C",
+    "Humedad_Relativa", "Velocidad_Viento_kmh", "Precipitacion_mm",
+    "Indice_Calidad_Aire", "Altitud_msnm", "Nivel_Riesgo",
+}
+
+# Si el estado de sesión trae un DataFrame de una versión anterior de la app
+# (p. ej. el dataset de COVID previo, con otras columnas), se descarta y se
+# regenera con el esquema meteorológico actual para evitar KeyError.
+necesita_regenerar = (
+    "df" not in st.session_state
+    or not COLUMNAS_ESPERADAS.issubset(set(st.session_state.df.columns))
+)
+if necesita_regenerar:
     st.session_state.df = generar_datos(500, semilla=42)
 if "semilla" not in st.session_state:
     st.session_state.semilla = 42
+
 
 with st.sidebar:
     st.subheader("⚙️ Simulación de datos")
